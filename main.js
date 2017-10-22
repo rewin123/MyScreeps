@@ -167,7 +167,11 @@ global.FreeDeadCreeps = function()
     ClearDeadCreeps();
 }
  
-console.log(Memory.sources['ef990774d80108c'].busy);
+//console.log(Memory.sources['ef990774d80108c'].busy);
+if(Memory.sources == undefined)
+{
+    Memory.sources = {};
+}
 //добавим busy(нагруженность) соурсам
 for(var i in Game.rooms)
 {
@@ -191,6 +195,7 @@ var minerBody = [CARRY, WORK, MOVE, MOVE];
 var advanceMinerBody = [CARRY, CARRY, WORK, MOVE, MOVE. MOVE];
 var minerScript = require('MinerMove');
 var actions = require('Action');
+var controller_orders = require('UpControllerOrderMake');
 if(Memory.indexer == undefined)
 {
     Memory.indexer = 0;
@@ -201,7 +206,7 @@ if(Memory.orders == undefined)
 {
     Memory.orders = new Array();
 }
-console.log(Memory.orders.length);
+console.log('Orders count: ' + Memory.orders.length);
 if(Memory.orders.length > 0)
 {
     console.log('Простой ' + OrderDelay());
@@ -358,56 +363,7 @@ for(var i in Game.spawns)
 //улучшаем контроллер комнаты
 for(var i in Game.rooms)
 {
-    var controller = Game.rooms[i].controller;
-    
-    var request = RequstEnergy('upgrade',controller.room.name,CARRY_CAPACITY);
-    console.log(request/CARRY_CAPACITY);
-    if(request < (controller.progressTotal - controller.progress) && request/CARRY_CAPACITY < 40)
-    {
-        
-        Memory.indexer += 1;
-        //make order to harvest
-        var order = {
-            roomName : controller.room.name,
-            time : Game.time,
-            name : 'upgrade',
-            owner : controller.room.name,
-            target : controller.id,
-            active : false,
-            index : Memory.indexer,
-            worker : '',
-        
-            actions : new Array()
-        }
-        
-        var act = 
-        {
-            a : 'harvest',
-            pos : GetUnbusySpawn(controller.room,controller.pos).pos
-        }
-        
-        order.actions.push(act);
-        
-        act = 
-        {
-            a : 'upgradeController',
-            pos : controller.pos
-        }
-        
-        order.actions.push(act);
-        
-        Memory.orders.push(order);
-        
-        if(Memory.orders[0] == null)
-        {
-            console.log('shift');
-            Memory.orders.shift();
-        }
-    }
-    else if(request - (controller.progressTotal - controller.progress) > CARRY_CAPACITY)
-    {
-        RemoveInactive('upgrade',controller.room.name);
-    }
+    MakeUpgradeOrder(Game.rooms[i],5);
     
 }
 
